@@ -1,55 +1,27 @@
-# Week 4.2 — Exercise 2: Anthropic API with Secrets
+# Gemini Secrets Demo — ATF Challenge Week 4.2 Exercise 2
 
-A Streamlit app that calls Claude using the official Anthropic Python SDK, with both server-side and manually supplied API keys.
+A Streamlit app that calls Google Gemini using a server-side secret, with manual password-field fallback. This is a **Gemini alternative** to the Anthropic-specific exercise, selected to avoid requiring Anthropic paid API credits.
 
-## Quick start
+## Deploy (Streamlit Community Cloud)
 
-Requires Python 3.10+ and a valid Anthropic API key (may incur charges).
+1. Create a GitHub repository and upload `app.py`, `requirements.txt`, `.gitignore`, and this README. Do not upload any real secret keys.
+2. Open https://share.streamlit.io and create an app from that repository; main file `app.py`.
+3. Open **Manage app → ⋮ → Settings → Secrets** and enter `GEMINI_API_KEY = "your_real_key"` in the private Streamlit secrets editor. Save.
+4. Open the app, leave the manual field unused, ask a question, and confirm a response.
+5. To test the fallback, temporarily remove the server secret, save, refresh the app, enter **your own key** in the password field, and ask a question. Restore the server secret when finished.
+
+## Test locally
 
 ```powershell
 python -m pip install -r requirements.txt
 python -m streamlit run app.py
 ```
 
-## Method A — Cloud-managed secret (recommended)
+Optionally create `.streamlit/secrets.toml` locally by copying `.streamlit/secrets.toml.example` and replacing its placeholder. Never commit the real `secrets.toml`.
 
-Deploy the repo on [Streamlit Community Cloud](https://share.streamlit.io/). Open your app's **Settings → Secrets** panel and add this TOML:
+## Notes
 
-```toml
-ANTHROPIC_API_KEY = "YOUR_REAL_API_KEY"
-```
-
-Save and restart/rerun the app if needed. It should display **API key configured via Streamlit secret.** The key is not exposed in app code.
-
-For local testing, create `.streamlit/secrets.toml` with the same contents. It is excluded by `.gitignore`.
-
-You can also set `ANTHROPIC_API_KEY` in your local process environment. The app checks `st.secrets` first, then environment variables.
-
-## Method B — Manual fallback
-
-To test the fallback, run a local copy **without** `.streamlit/secrets.toml` and **without** the `ANTHROPIC_API_KEY` environment variable. The app displays a password-type field. Enter your own key; press **Ask Claude**. No key is saved by this app to a file, and it is not deliberately logged. For safety, use this option only in a deployment you control and trust. Do not share credentials with strangers or put them in screenshots.
-
-## Automated tests
-
-```powershell
-python -m unittest discover -s tests -v
-```
-
-Six unit tests verify credential source selection and fallback with dummy values. These tests **do not** call the live Anthropic API. To complete a live end-to-end test, provide a valid key and submit a question.
-
-## Configuring the model
-
-The app defaults to `claude-haiku-5-5`. To change it, set an `ANTHROPIC_MODEL` environment variable to a model available to your Anthropic account. This environment setting is optional and is not a secret.
-
-## Security notes
-
-- Never commit keys or `.streamlit/secrets.toml` to Git.
-- Don't print secrets, put them in logs, or include them in chat messages.
-- Avoid storing visitors' supplied keys. This app does not persist them to disk but Streamlit holds input-widget values in the active session.
-- Public use of your server-side API key can incur charges; add access control, rate limits, and spending caps before publicly promoting the app.
-
-## Deployment
-
-Upload `app.py`, `auth.py`, `requirements.txt`, `.gitignore`, and `README.md` to a GitHub repository and deploy on Streamlit Community Cloud by selecting `app.py` as the main file. Configure the secret through the Streamlit Cloud UI, not through GitHub. For this exercise, no Dockerfile or Hugging Face YAML is required.
-
-Reference: https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/secrets-management
+- Uses `google-genai` and the `gemini-3.6-flash` model. Actual access depends on current model availability, account eligibility and API quotas. Free-tier requests are subject to limits; check https://ai.google.dev/gemini-api/docs/pricing.
+- An app with a server-side key exposed publicly lets visitors spend your API allowance. Restrict access or add authentication and rate limits before widespread sharing.
+- Never post, log, or upload real API keys. If a key was exposed, revoke it and generate a new one.
+- The app intentionally displays a generic error rather than potentially sensitive provider exception text.
